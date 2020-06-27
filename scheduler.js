@@ -8,7 +8,11 @@ class Scheduler {
   }
 
   schedule(job) {
-    this.jobs.push(job);
+    if (this.isWorkerFree) {
+      this.delegateToWorker(job);
+    } else {
+      this.jobs.push(job);
+    }
   }
 
   delegateToWorker(data) {
@@ -33,6 +37,10 @@ class Scheduler {
 
   setWorkerFree() {
     this.isWorkerFree = true;
+    if (this.jobs.length > 0) {
+      const job = this.jobs.shift();
+      this.delegateToWorker(job);
+    }
   }
 }
 
