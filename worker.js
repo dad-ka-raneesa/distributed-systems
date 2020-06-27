@@ -26,14 +26,19 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post('/process/:id/:count/:width/:height/:tags', (req, res) => {
+app.post('/process', (req, res) => {
+  let data = '';
+  req.on('data', (chunk) => data += chunk);
+  req.on('end', () => {
+    const params = JSON.parse(data);
+    processImages(params)
+      .then((tags) => {
+        console.log(tags);
+        return { id: params.id, tags: tags };
+      })
+      .then(informWorkerFree);
+  })
   res.end();
-  processImages(req.params)
-    .then((tags) => {
-      console.log(tags);
-      return { id: req.params.id, tags: tags };
-    })
-    .then(informWorkerFree);
 })
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}...`));

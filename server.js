@@ -4,8 +4,17 @@ const { ImageSets } = require("./imageSets");
 const { Scheduler } = require("./scheduler");
 
 
+const getWorkerOptions = () => {
+  return {
+    host: 'localhost',
+    port: 5000,
+    method: 'post',
+    path: '/process'
+  };
+};
+
 const imageSets = new ImageSets();
-const scheduler = new Scheduler();
+const scheduler = new Scheduler(getWorkerOptions());
 scheduler.start();
 
 app.use((req, res, next) => {

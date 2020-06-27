@@ -1,15 +1,8 @@
 const http = require('http');
 
-const getWorkerOptions = () => {
-  return {
-    host: 'localhost',
-    port: 5000,
-    method: 'post'
-  };
-};
-
 class Scheduler {
-  constructor() {
+  constructor(workerOptions) {
+    this.workerOptions = workerOptions;
     this.isWorkerFree = true;
     this.jobs = [];
   }
@@ -18,12 +11,12 @@ class Scheduler {
     this.jobs.push(job);
   }
 
-  delegateToWorker({ id, width, height, count, tags }) {
-    const options = getWorkerOptions();
-    options.path = `/process/${id}/${count}/${width}/${height}/${tags}`;
+  delegateToWorker(data) {
+    const options = this.workerOptions;
     const req = http.request(options, (res) => {
       console.log('Scheduled on worker', res.statusCode);
     });
+    req.write(JSON.stringify(data));
     req.end();
     this.isWorkerFree = false;
   }
