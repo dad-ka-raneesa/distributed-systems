@@ -25,15 +25,8 @@ app.use((req, res, next) => {
   next();
 })
 
-app.post('/completed-job/:agentId/:id', (req, res) => {
-  let data = '';
-  req.on('data', (chunk) => (data += chunk));
-  req.on('end', () => {
-    const tags = JSON.parse(data);
-    imageSets.completeProcessing(redisClient, req.params.id, tags);
-    scheduler.setAgentFree(req.params.agentId);
-    res.end();
-  });
+app.post('/completed-job/:agentId', (req, res) => {
+  scheduler.setAgentFree(req.params.agentId);
 });
 
 app.get('/status/:id', (req, res) => {
