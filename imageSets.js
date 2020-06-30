@@ -1,26 +1,41 @@
-class ImageSets {
-  constructor() {
-    this.ImageSets = {};
-    this.id = 0;
-  }
+const getCurrentId = (client) => {
+  return new Promise((resolve, reject) => {
+    client.incr('curr_id', (err, res) => {
+      resolve(res);
+    });
+  });
+};
 
-  addImageSet(imageSet) {
-    let jobToSchedule = Object.assign({ id: this.id }, imageSet);
-    this.ImageSets[this.id] = Object.assign({}, imageSet);
-    this.ImageSets[this.id].status = 'scheduled';
-    this.ImageSets[this.id].receivedAt = new Date();
-    this.id++;
-    return jobToSchedule;
-  }
-
-  completeProcessing(id, tags) {
-    this.ImageSets[id].tags = tags;
-    this.ImageSets[id].status = 'completed';
-  }
-
-  get(id) {
-    return Object.assign({}, this.ImageSets[id]);
-  }
+const createJob = (client, id, imageSet) => {
+  return new Promise((resolve, reject) => {
+    const status = ['status', 'scheduled'];
+    const receivedAt = ['receivedAt', new Date()];
+    client.hmset(`job_${id}`, status.concat(receivedAt), (err, res) => {
+      resolve(Object.assign({ id: id }, imageSet));
+    });
+  });
 }
 
-module.exports = { ImageSets };
+const addImageSet = (client, imageSet) => {
+  return getCurrentId(client).then((id) => createJob(client, id, imageSet));
+}
+
+const completeProcessing = (client, id, tags) => {
+  return new Promise((resolve, reject) => {
+    const status = ['status', 'completed'];
+    const tagsField = ['tags', JSON.stringify(tags)];
+    client.hmset(`job_${id}`, status.concat(tagsField), (err, res) => {
+      resolve(res);
+    });
+  });
+}
+
+const get = (client, id) => {
+  return new Promise((resolve, reject) => {
+    client.hgetall(`job_${id}`, (err, res) => {
+      resolve(res);
+    });
+  });
+}
+
+module.exports = { addImageSet, getCurrentId, completeProcessing, get };
