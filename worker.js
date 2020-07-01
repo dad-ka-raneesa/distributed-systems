@@ -1,18 +1,14 @@
 const http = require('http');
 const redis = require('redis');
-const express = require('express');
-const app = express();
 const processImages = require('./processImages').processImages;
 const imageSets = require('./imageSets');
-const { resolve } = require('path');
-const { rejects } = require('assert');
 
 const redisClient = redis.createClient({ db: 1 });
 
 const getServerOptions = () => {
   return {
     host: 'localhost',
-    port: 8000,
+    port: 8001,
     path: '/request-job'
   };
 };
