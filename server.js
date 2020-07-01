@@ -17,24 +17,13 @@ app.get('/status/:id', (req, res) => {
   })
 })
 
-const getQueueBrokerOptions = () => ({
-  host: 'localhost',
-  port: 8001,
-  path: '/queue-job/',
-  method: 'post'
-});
-
 app.post('/process/:name/:count/:width/:height/:tags', (req, res) => {
   imageSets.addImageSet(redisClient, req.params)
     .then((job) => {
-      res.send(`id:${job.id}`);
-      res.end();
-      const options = getQueueBrokerOptions();
-      options.path = options.path + job.id;
-      const req = http.request(options, (res) => {
-        console.log("Got from queue broker", res.statusCode);
+      redisClient.lpush('ipQueue', job.id, () => {
+        res.send(`id:${job.id}`);
+        res.end();
       });
-      req.end();
     });
 });
 
